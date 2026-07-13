@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Predict — {{ model_name }}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <style>
+    body { 
+      background: url("/static/predict.jpg") no-repeat center center fixed; 
+      background-size: cover; 
+      min-height: 100vh;
+    }
+    
+    .container {
+      background: rgba(255, 255, 255, 0.7); 
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 20px;
+    }
+    .model-header { background:linear-gradient(135deg,{{ model_color }},#1F4E79);
+    background:url("/static/predict.jpg") no-repeat center center fixed;
+    background-size: cover;
+    color:black; border-radius:16px; padding:1.5rem 2rem; margin-bottom:1.5rem; }
+    
+    .tab-wrapper { display:flex; border-radius:14px; overflow:hidden;
+      box-shadow:0 4px 16px rgba(0,0,0,0.15); margin-bottom:1.5rem; border:2px solid #dee2e6; }
+    .tab-btn { flex:1; padding:1.1rem; border:none; background:#fff;
+      font-weight:700; font-size:1.05rem; cursor:pointer; transition:all 0.25s; }
+    .tab-btn.active { background:{{ model_color }}; color:white; }
+    .tab-btn:first-child { border-right:2px solid #dee2e6; }
+    .tab-pane { display:none; }
+    .tab-pane.active { display:block; }
+
+    /* Feature inputs */
+    .feature-box { background:white; border-radius:10px; padding:0.55rem 0.75rem;
+      margin-bottom:0.45rem; border-left:4px solid {{ model_color }}; }
+    .feature-box label { font-size:0.76rem; font-weight:600; color:#1F4E79;
+      margin-bottom:1px; display:block; }
+    .feature-box input { border:none; border-bottom:1px solid #ddd;
+      padding:2px 4px; font-size:0.85rem; width:100%; background:transparent; }
+    .feature-box input:focus { outline:none; border-color:{{ model_color }}; }
+    .sec-title { font-weight:700; color:#1F4E79; font-size:0.85rem;
+      border-bottom:2px solid {{ model_color }}; padding-bottom:3px; margin:0.75rem 0 0.6rem; }
+
+    /* CSV Steps */
+    .step-badge { width:32px; height:32px; border-radius:50%; background:{{ model_color }};
+      color:white; font-weight:700; display:flex; align-items:center; justify-content:center;
+      font-size:0.9rem; flex-shrink:0; }
+    .step-done  { background:#198754 !important; }
+    .step-box { background:white; border-radius:12px; padding:1.2rem;
+      border:2px solid #e9ecef; margin-bottom:1rem; }
+    .step-box.active-step { border-color:{{ model_color }}; }
+    .step-box.done-step   { border-color:#198754; opacity:0.8; }
+
+    /* Upload zone */
+    .upload-zone { border:2.5px dashed {{ model_color }}; border-radius:12px;
+      padding:2rem; text-align:center; background:#f8f9fa;
+      cursor:pointer; transition:all 0.2s; }
+    .upload-zone:hover { background:#EBF5FF; border-style:solid; }
+
+    /* Column mapping */
+    .col-map-row { display:flex; align-items:center; gap:0.5rem;
+      padding:0.5rem 0; border-bottom:1px solid #f0f0f0; }
+    .col-map-row:last-child { border-bottom:none; }
+    .req-col   { font-size:0.82rem; font-weight:600; color:#1F4E79;
+                 background:#EBF5FF; padding:3px 8px; border-radius:6px;
+                 min-width:180px; }
+    .arrow     { color:#aaa; font-size:1.2rem; }
+    .map-select { font-size:0.85rem; border-radius:6px; border:1px solid #ddd;
+                  padding:3px 6px; flex:1; }
+    .map-select.matched  { border-color:#198754; background:#f0fff4; }
+    .map-select.unmatched { border-color:#dc3545; background:#fff5f5; }
+
+    /* Results */
+    .stat-box { border-radius:12px; padding:1rem; text-align:center; color:white; }
+    .stat-num { font-size:2.2rem; font-weight:700; line-height:1; }
+    .result-row-success { background:#d4edda; }
+    .result-row-danger  { background:#f8d7da; }
+
+    .btn-predict { background:{{ model_color }}; color:white; border:none;
+      border-radius:50px; padding:0.75rem 2.5rem; font-size:1rem; font-weight:600; }
+    .btn-predict:hover { opacity:0.85; color:white; }
+  </style>
+</head>
+<body>
+<div class="container py-4" style="max-width:980px;">
+
+  <!-- Header -->
+  <div class="model-header d-flex align-items-center gap-3">
+    <span style="font-size:2.5rem;">{{ model_icon }}</span>
+    <div>
+      <h4 class="mb-0 fw-bold">{{ model_name }}</h4>
+      <small class="opacity-75">{{ model_description }}</small><br/>
+      <span class="badge bg-light text-dark mt-1">Accuracy: {{ model_accuracy }}%</span>
+    </div>
+    <a href="/" class="btn btn-light btn-sm ms-auto rounded-pill">← Change Model</a>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-wrapper">
+    <button class="tab-btn active" id="btn-manual" onclick="switchTab('manual')">
+      ✏️ &nbsp; Manual Entry
+    </button>
+    <button class="tab-btn" id="btn-csv" onclick="switchTab('csv')">
+      📂 &nbsp; CSV Upload
+    </button>
+  </div>
+
+  <!-- ═══ MANUAL ENTRY ═══════════════════════════════════════ -->
+  <div id="pane-manual" class="tab-pane active">
+    <div class="d-flex gap-2 mb-3 flex-wrap">
+      <button class="btn btn-success btn-sm rounded-pill px-3"
+              onclick="loadSample('benign')">✅ Load Benign Sample</button>
+      <button class="btn btn-danger btn-sm rounded-pill px-3"
+              onclick="loadSample('malignant')">⚠️ Load Malignant Sample</button>
+      <button class="btn btn-outline-secondary btn-sm rounded-pill px-3"
+              onclick="clearForm()">🔄 Clear All</button>
+    </div>
+    <form action="/predict/{{ model_key }}" method="POST">
+      <div class="row">
+        <div class="col-md-4">
+          <div class="sec-title">📊 Mean Features</div>
+          {% for name in feature_names[:10] %}
+          <div class="feature-box">
+            <label>{{ name }}</label>
+            <input type="number" step="any" name="{{ name }}" id="{{ name }}" required/>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="col-md-4">
+          <div class="sec-title">📉 Error Features</div>
+          {% for name in feature_names[10:20] %}
+          <div class="feature-box">
+            <label>{{ name }}</label>
+            <input type="number" step="any" name="{{ name }}" id="{{ name }}" required/>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="col-md-4">
+          <div class="sec-title">⚠️ Worst Features</div>
+          {% for name in feature_names[20:] %}
+          <div class="feature-box">
+            <label>{{ name }}</label>
+            <input type="number" step="any" name="{{ name }}" id="{{ name }}" required/>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="text-center mt-4 mb-3">
+        <button type="submit" class="btn btn-predict">
+          🔍 Predict with {{ model_name }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ═══ CSV UPLOAD ══════════════════════════════════════════ -->
+  <div id="pane-csv" class="tab-pane">
+
+    <!-- STEP 1: Upload -->
+    <div class="step-box active-step" id="step1-box">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <div class="step-badge" id="badge1">1</div>
+        <h6 class="mb-0 fw-bold">Upload Your CSV File</h6>
+        <a href="/sample-csv" class="btn btn-outline-success btn-sm rounded-pill ms-auto">
+          ⬇️ Download Sample CSV
+        </a>
+      </div>
+      <div class="upload-zone" id="drop-zone"
+           onclick="document.getElementById('csv_file').click()"
+           ondragover="event.preventDefault();this.classList.add('border-primary')"
+           ondragleave="this.classList.remove('border-primary')"
+           ondrop="handleDrop(event)">
+        <div style="font-size:2.5rem;">📊</div>
+        <h6 class="mt-2 fw-bold">Click or Drag & Drop your CSV</h6>
+        <p class="text-muted mb-0 small" id="file-label">
+          Any CSV format accepted — columns will be auto-matched!
+        </p>
+        <input type="file" id="csv_file" accept=".csv" class="d-none"
+               onchange="onFileSelect(this)"/>
+      </div>
+      <div class="text-center mt-3">
+        <button class="btn btn-predict px-5" onclick="analyzeCSV()"
+                id="analyze-btn" disabled>
+          🔍 Analyze CSV Columns
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 2: Column Mapping -->
+    <div class="step-box d-none" id="step2-box">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <div class="step-badge" id="badge2">2</div>
+        <h6 class="mb-0 fw-bold">Map Your Columns to Model Features</h6>
+        <span class="badge bg-success ms-auto" id="match-status"></span>
+      </div>
+      <p class="text-muted small mb-3">
+        💡 We've auto-matched the columns. If it's wrong, select the correct column from the dropdown.
+           For any column missing in your CSV, select <strong>"-- Not Available --"</strong> (value will default to 0).
+      </p>
+      <div id="mapping-container" style="max-height:400px; overflow-y:auto;"></div>
+      <div class="text-center mt-3">
+        <button class="btn btn-predict px-5" onclick="runPrediction()" id="predict-btn">
+          🚀 Run Prediction
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 3: Results -->
+    <div class="d-none" id="step3-box">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <div class="step-badge step-done">✓</div>
+        <h6 class="mb-0 fw-bold">Prediction Results</h6>
+        <button class="btn btn-outline-secondary btn-sm rounded-pill ms-auto"
+                onclick="resetCSV()">🔄 New CSV Upload</button>
+      </div>
+
+      <!-- Missing features warning -->
+      <div id="missing-warning" class="alert alert-warning d-none small mb-3">
+        ⚠️ <strong>Note:</strong> Some features were not mapped — value 0 has been used.
+        Results will be less accurate. <span id="missing-list"></span>
+      </div>
+
+      <!-- Stats -->
+      <div class="row g-3 mb-4">
+        <div class="col-4">
+          <div class="stat-box" style="background:#1F4E79;">
+            <div class="stat-num" id="stat-total">0</div>
+            <div class="small">Total Patients</div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="stat-box" style="background:#198754;">
+            <div class="stat-num" id="stat-benign">0</div>
+            <div class="small">✅ Benign</div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="stat-box" style="background:#dc3545;">
+            <div class="stat-num" id="stat-malignant">0</div>
+            <div class="small">⚠️ Malignant</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-white rounded-4 d-flex justify-content-between align-items-center py-3">
+          <span class="fw-bold">📋 Patient-wise Results</span>
+          <button class="btn btn-success btn-sm rounded-pill px-3"
+                  onclick="downloadResults()">⬇️ Download Results</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-dark">
+              <tr><th>#</th><th>Patient ID</th><th>Prediction</th><th>Confidence</th><th>Status</th></tr>
+            </thead>
+            <tbody id="results-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading + Error -->
+    <div id="csv-loading" class="text-center d-none py-4">
+      <div class="spinner-border" style="color:{{ model_color }}"></div>
+      <p class="mt-2 fw-bold text-muted">Processing...</p>
+    </div>
+    <div id="csv-error" class="alert alert-danger d-none rounded-3 mt-3"></div>
+
+    <!-- Hidden download form -->
+    <form id="dl-form" action="/download-results" method="POST" class="d-none">
+      <input type="hidden" name="rows_json" id="rows-json-input"/>
+    </form>
+  </div>
+
+</div>
+
+<script>
+const MODEL_KEY    = "{{ model_key }}";
+let csvResults     = null;
+let currentMapping = {};
+let userCols       = [];
+let storeId        = '';   // ← server memory store ID
+
+// ── Tab switch ─────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('pane-' + tab).classList.add('active');
+  document.getElementById('btn-'  + tab).classList.add('active');
+}
+
+// ── Manual ─────────────────────────────────────────────────────
+async function loadSample(type) {
+  const data = await (await fetch(`/sample/${type}`)).json();
+  for (const [k, v] of Object.entries(data)) {
+    const el = document.getElementById(k);
+    if (el) el.value = parseFloat(v).toFixed(4);
+  }
+}
+function clearForm() {
+  document.querySelectorAll('input[type="number"]').forEach(e => e.value = '');
+}
+
+// ── CSV: file select ───────────────────────────────────────────
+function onFileSelect(inp) {
+  if (inp.files.length > 0) {
+    document.getElementById('file-label').textContent = '📄 ' + inp.files[0].name;
+    document.getElementById('analyze-btn').disabled = false;
+  }
+}
+function handleDrop(e) {
+  e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  if (file && file.name.endsWith('.csv')) {
+    const dt = new DataTransfer(); dt.items.add(file);
+    document.getElementById('csv_file').files = dt.files;
+    onFileSelect(document.getElementById('csv_file'));
+  }
+}
+
+// ── STEP 1: Analyze CSV ────────────────────────────────────────
+async function analyzeCSV() {
+  const file = document.getElementById('csv_file').files[0];
+  if (!file) return;
+
+  showLoading(true);
+  const fd = new FormData();
+  fd.append('csv_file', file);
+
+  try {
+    const data = await (await fetch(`/csv-upload/${MODEL_KEY}`,
+                        {method:'POST', body:fd})).json();
+    showLoading(false);
+    if (data.error) { showError(data.error); return; }
+
+    userCols       = data.user_cols;
+    currentMapping = data.auto_mapping;
+    storeId        = data.store_id;   // ← save store_id from server
+
+    // Show step 2
+    document.getElementById('step2-box').classList.remove('d-none');
+    document.getElementById('step1-box').classList.remove('active-step');
+    document.getElementById('step1-box').classList.add('done-step');
+    document.getElementById('badge1').textContent = '✓';
+
+    // Build mapping UI
+    buildMappingUI(data.required_cols, data.auto_mapping, data.user_cols, data.total_rows);
+
+  } catch(err) { showLoading(false); showError(err.message); }
+}
+
+// ── Build mapping UI ───────────────────────────────────────────
+function buildMappingUI(requiredCols, autoMapping, userCols, totalRows) {
+  const matched   = Object.keys(autoMapping).length;
+  const unmatched = requiredCols.length - matched;
+
+  document.getElementById('match-status').textContent =
+    `${matched}/30 auto-matched • ${totalRows} rows`;
+  document.getElementById('match-status').className =
+    'badge ms-auto ' + (unmatched === 0 ? 'bg-success' : 'bg-warning text-dark');
+
+  let html = '';
+  for (const req of requiredCols) {
+    const matched_col = autoMapping[req] || '';
+    const cls = matched_col ? 'matched' : 'unmatched';
+    let options = '<option value="">-- Not Available (use 0) --</option>';
+    for (const uc of userCols) {
+      const sel = uc === matched_col ? 'selected' : '';
+      options += `<option value="${uc}" ${sel}>${uc}</option>`;
+    }
+    html += `
+      <div class="col-map-row">
+        <span class="req-col">${req}</span>
+        <span class="arrow">→</span>
+        <select class="map-select ${cls}" id="map_${req.replace(/ /g,'_')}"
+                onchange="updateMapping('${req}', this)">
+          ${options}
+        </select>
+        <span id="icon_${req.replace(/ /g,'_')}">${matched_col ? '✅' : '❓'}</span>
+      </div>`;
+  }
+  document.getElementById('mapping-container').innerHTML = html;
+}
+
+function updateMapping(reqCol, select) {
+  const val = select.value;
+  if (val) {
+    currentMapping[reqCol] = val;
+    select.className = 'map-select matched';
+    document.getElementById('icon_' + reqCol.replace(/ /g,'_')).textContent = '✅';
+  } else {
+    delete currentMapping[reqCol];
+    select.className = 'map-select unmatched';
+    document.getElementById('icon_' + reqCol.replace(/ /g,'_')).textContent = '❓';
+  }
+}
+
+// ── STEP 2: Run prediction ────────────────────────────────────
+async function runPrediction() {
+  showLoading(true);
+  const fd = new FormData();
+  fd.append('mapping', JSON.stringify(currentMapping));
+  fd.append('store_id', storeId);   // ← send store_id to server
+
+  try {
+    const data = await (await fetch(`/csv-predict/${MODEL_KEY}`,
+                        {method:'POST', body:fd})).json();
+    showLoading(false);
+    if (data.error) { showError(data.error); return; }
+
+    csvResults = data.results;
+
+    // Show step 3
+    document.getElementById('step3-box').classList.remove('d-none');
+    document.getElementById('step2-box').classList.add('done-step');
+
+    // Missing warning
+    if (data.missing_features && data.missing_features.length > 0) {
+      document.getElementById('missing-warning').classList.remove('d-none');
+      document.getElementById('missing-list').textContent =
+        'Missing: ' + data.missing_features.join(', ');
+    }
+
+    // Stats
+    document.getElementById('stat-total').textContent     = data.total;
+    document.getElementById('stat-benign').textContent    = data.benign;
+    document.getElementById('stat-malignant').textContent = data.malignant;
+
+    // Table
+    document.getElementById('results-tbody').innerHTML =
+      data.results.map(r => `
+        <tr class="result-row-${r.status}">
+          <td><strong>#${r.row}</strong></td>
+          <td>${r.id}</td>
+          <td><strong>${r.prediction}</strong></td>
+          <td>${r.confidence}</td>
+          <td><span class="badge bg-${r.status}">
+            ${r.prediction==='Benign'?'✅':'⚠️'} ${r.prediction}
+          </span></td>
+        </tr>`).join('');
+
+  } catch(err) { showLoading(false); showError(err.message); }
+}
+
+function resetCSV() {
+  document.getElementById('step2-box').classList.add('d-none');
+  document.getElementById('step3-box').classList.add('d-none');
+  document.getElementById('step1-box').classList.remove('done-step');
+  document.getElementById('step1-box').classList.add('active-step');
+  document.getElementById('badge1').textContent = '1';
+  document.getElementById('analyze-btn').disabled = true;
+  document.getElementById('file-label').textContent = 'Any CSV format accepted — columns will be auto-matched!';
+  document.getElementById('csv_file').value = '';
+  document.getElementById('csv-error').classList.add('d-none');
+  document.getElementById('missing-warning').classList.add('d-none');
+}
+
+function downloadResults() {
+  document.getElementById('rows-json-input').value = JSON.stringify(csvResults);
+  document.getElementById('dl-form').submit();
+}
+
+function showLoading(v) {
+  document.getElementById('csv-loading').classList.toggle('d-none', !v);
+}
+function showError(msg) {
+  const el = document.getElementById('csv-error');
+  el.textContent = '⚠️ ' + msg;
+  el.classList.remove('d-none');
+}
+</script>
+</body>
+</html>

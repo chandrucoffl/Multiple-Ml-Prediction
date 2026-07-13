@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Breast Cancer Prediction</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <style>
+
+    body { background:#effdff; font-family:'Segoe UI',sans-serif;
+    background:url("/static/home.jpg") no-repeat center center fixed;
+    background-size: cover;
+  }
+    .header {
+      background:linear-gradient(135deg,#1F4E79,#2E75B6);
+      background:url("/static/hometop.jpg") no-repeat center center fixed;
+      background-size: cover;
+      color:rgb(0, 0, 0); border-radius:20px; padding:2.5rem;
+      margin-bottom:2rem; text-align:center;
+    }
+    .model-card {
+      background:white; border-radius:16px; padding:1.5rem;
+      background:url("/static/home.jpg") no-repeat center center fixed;
+      background-size: cover;
+      border-top:5px solid var(--mc); cursor:pointer;
+      transition:transform 0.2s, box-shadow 0.2s;
+      text-decoration:none; color:inherit; display:block; height:100%;
+    }
+    .model-card:hover {
+      transform:translateY(-6px);
+      box-shadow:0 12px 32px rgba(0,0,0,0.13); color:inherit;
+    }
+    .model-icon  { font-size:2.5rem; }
+    .model-name  { font-weight:700; font-size:1.05rem; margin:0.5rem 0 0.25rem; }
+    .model-desc  { font-size:0.82rem; color:#555; margin-bottom:0.75rem; line-height:1.5; }
+    .acc-badge   {
+      font-size:0.8rem; font-weight:700; padding:5px 14px;
+      border-radius:50px; background:var(--mc); color:white;
+      display:inline-block;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Home & Logout Buttons added at the top right corner -->
+  <div class="container" style="max-width:960px; padding-top: 1rem; text-align: right;">
+    <a href="/" class="btn btn-outline-primary btn-sm">Home</a>
+    <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm">Logout</a>
+  </div>
+
+  <div class="container py-4" style="max-width:960px;">
+
+  <div class="header">
+    <h2>🩺 Breast Cancer Prediction</h2>
+    <p class="mb-1 opacity-75">Choose a Machine Learning model to predict</p>
+    <small class="opacity-50">Each model works differently — compare results!</small>
+  </div>
+
+  <h5 class="fw-bold mb-3 text-primary">🤖 Select a Model:</h5>
+
+  <div class="row g-3">
+
+    <div class="col-md-4">
+      <a href="/predict/logistic_regression" class="model-card" style="--mc:#0d6efd">
+        <div class="model-icon">📈</div>
+        <div class="model-name">Logistic Regression</div>
+        <div class="model-desc">
+          A linear model that is fast and easy to interpret.
+          Best suited for binary classification tasks.
+        </div>
+        <span class="acc-badge">Accuracy: 97.37%</span>
+      </a>
+    </div>
+
+    <div class="col-md-4">
+      <a href="/predict/random_forest" class="model-card" style="--mc:#198754">
+        <div class="model-icon">🌳</div>
+        <div class="model-name">Random Forest</div>
+        <div class="model-desc">
+          Combines multiple decision trees for higher accuracy.
+          A robust and reliable ensemble model.
+        </div>
+        <span class="acc-badge">Accuracy: 96.49%</span>
+      </a>
+    </div>
+
+    <div class="col-md-4">
+      <a href="/predict/svm" class="model-card" style="--mc:#dc3545">
+        <div class="model-icon">⚡</div>
+        <div class="model-name">Support Vector Machine</div>
+        <div class="model-desc">
+          Uses a hyperplane to separate classes.
+          Excellent performance on complex datasets.
+        </div>
+        <span class="acc-badge">Accuracy: 98.25%</span>
+      </a>
+    </div>
+
+    <div class="col-md-4">
+      <a href="/predict/decision_tree" class="model-card" style="--mc:#fd7e14">
+        <div class="model-icon">🌿</div>
+        <div class="model-name">Decision Tree</div>
+        <div class="model-desc">
+          Works like a set of if-else rules.
+          Easy to understand and visualize.
+        </div>
+        <span class="acc-badge">Accuracy: 94.74%</span>
+      </a>
+    </div>
+
+    <div class="col-md-4">
+      <a href="/predict/knn" class="model-card" style="--mc:#6f42c1">
+        <div class="model-icon">🔵</div>
+        <div class="model-name">K-Nearest Neighbors</div>
+        <div class="model-desc">
+          Predicts based on the 5 closest data points.
+          Simple, intuitive, and effective.
+        </div>
+        <span class="acc-badge">Accuracy: 94.74%</span>
+      </a>
+    </div>
+
+    <div class="col-md-4">
+      <a href="/predict/naive_bayes" class="model-card" style="--mc:#20c997">
+        <div class="model-icon">🧮</div>
+        <div class="model-name">Naive Bayes</div>
+        <div class="model-desc">
+          A probability-based classifier.
+          Fast, lightweight, and works great with medical data.
+        </div>
+        <span class="acc-badge">Accuracy: 97.37%</span>
+      </a>
+    </div>
+
+  </div>
+
+  <div class="mt-4 p-3 rounded-3 shadow-sm sticky-tip">
+    <p class="mb-0 text-muted" style="font-size:0.85rem;">
+      💡 <strong>Tip:</strong> Select a model → Use <strong>Manual Entry</strong> to type values
+      or <strong>CSV Upload</strong> to predict multiple patients at once!
+    </p>
+</div>
+
+</div>
+</body>
+</html>

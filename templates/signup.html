@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Doctor Sign Up - Breast Cancer Prediction</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <style>
+    body {
+      background: linear-gradient(135deg, #1F4E79, #2E75B6);
+      background:url("/static/signup.jpg") no-repeat center center fixed;
+      background-size: cover;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 0;
+    }
+    .card {
+      border: none;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      width: 520px;
+    }
+    .card-header {
+      background: linear-gradient(135deg, #1F4E79, #2E75B6);
+      border-radius: 20px 20px 0 0 !important;
+      padding: 2rem;
+      text-align: center;
+      color: white;
+    }
+    .form-label {
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: #1F4E79;
+      margin-bottom: 4px;
+    }
+    .form-control {
+      border-radius: 10px;
+      border: 1.5px solid #dee2e6;
+      padding: 0.6rem 1rem;
+      font-size: 0.9rem;
+      transition: border-color 0.2s;
+    }
+    .form-control:focus {
+      border-color: #2E75B6;
+      box-shadow: 0 0 0 3px rgba(46,117,182,0.15);
+    }
+    .input-group-text {
+      border-radius: 10px 0 0 10px;
+      background: #EBF5FF;
+      border: 1.5px solid #dee2e6;
+      border-right: none;
+      color: #2E75B6;
+    }
+    .input-group .form-control {
+      border-radius: 0 10px 10px 0;
+    }
+    .btn-signup {
+      background: linear-gradient(135deg, #1F4E79, #2E75B6);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 0.75rem;
+      font-weight: 700;
+      font-size: 1rem;
+      width: 100%;
+      transition: opacity 0.2s;
+    }
+    .btn-signup:hover { opacity: 0.9; color: white; }
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #2E75B6;
+      border-bottom: 2px solid #EBF5FF;
+      padding-bottom: 4px;
+      margin: 1.2rem 0 0.8rem;
+    }
+    .strength-bar { height: 5px; border-radius: 10px; transition: all 0.3s; background: #dee2e6; }
+    .strength-fill { height: 5px; border-radius: 10px; transition: all 0.3s; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <!-- Header -->
+  <div class="card-header">
+    <div style="font-size:2.5rem;">🩺</div>
+    <h4 class="mb-0 mt-2 fw-bold">Doctor Registration</h4>
+    <small class="opacity-75">Breast Cancer Prediction System</small>
+  </div>
+
+  <div class="card-body p-4">
+
+    {% if error %}
+    <div class="alert alert-danger rounded-3 py-2 small">⚠️ {{ error }}</div>
+    {% endif %}
+
+    {% if success %}
+    <div class="alert alert-success rounded-3 py-2 small">✅ {{ success }}</div>
+    {% endif %}
+
+    <form action="/signup" method="POST" onsubmit="return validateForm()">
+
+      <!-- Personal Info -->
+      <div class="section-label">👤 Personal Information</div>
+
+      <div class="row g-2 mb-2">
+        <div class="col-md-6">
+          <label class="form-label">Full Name *</label>
+          <div class="input-group">
+            <span class="input-group-text">👤</span>
+            <input type="text" name="full_name" class="form-control"
+                   placeholder="Dr. John Smith"
+                   value="{{ form_data.full_name if form_data else '' }}"
+                   required/>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Date of Birth *</label>
+          <div class="input-group">
+            <span class="input-group-text">📅</span>
+            <input type="date" name="dob" class="form-control"
+                   value="{{ form_data.dob if form_data else '' }}"
+                   max="{{ today }}" required/>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-2 mb-2">
+        <div class="col-md-6">
+          <label class="form-label">Age *</label>
+          <div class="input-group">
+            <span class="input-group-text">🔢</span>
+            <input type="number" name="age" class="form-control"
+                   placeholder="35" min="22" max="80"
+                   value="{{ form_data.age if form_data else '' }}"
+                   required/>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Mobile Number *</label>
+          <div class="input-group">
+            <span class="input-group-text">📱</span>
+            <input type="tel" name="mobile" class="form-control"
+                   placeholder="9876543210" maxlength="10"
+                   pattern="[0-9]{10}"
+                   value="{{ form_data.mobile if form_data else '' }}"
+                   required/>
+          </div>
+        </div>
+      </div>
+
+      <!-- Professional Info -->
+      <div class="section-label">🏥 Professional Information</div>
+
+      <div class="row g-2 mb-2">
+        <div class="col-md-6">
+          <label class="form-label">Specialization *</label>
+          <div class="input-group">
+            <span class="input-group-text">🩺</span>
+            <select name="specialization" class="form-control" required>
+              <option value="" disabled {{ 'selected' if not form_data else '' }}>Select...</option>
+              <option value="Oncologist">Oncologist</option>
+              <option value="General Physician">General Physician</option>
+              <option value="Radiologist">Radiologist</option>
+              <option value="Surgeon">Surgeon</option>
+              <option value="Pathologist">Pathologist</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Hospital / Clinic *</label>
+          <div class="input-group">
+            <span class="input-group-text">🏨</span>
+            <input type="text" name="hospital" class="form-control"
+                   placeholder="City Hospital"
+                   value="{{ form_data.hospital if form_data else '' }}"
+                   required/>
+          </div>
+        </div>
+      </div>
+
+      <!-- Account Info -->
+      <div class="section-label">🔐 Account Credentials</div>
+
+      <div class="mb-2">
+        <label class="form-label">Username *</label>
+        <div class="input-group">
+          <span class="input-group-text">@</span>
+          <input type="text" name="username" class="form-control"
+                 placeholder="dr.johnsmith"
+                 value="{{ form_data.username if form_data else '' }}"
+                 pattern="[a-zA-Z0-9._]{4,20}"
+                 title="4-20 chars, letters/numbers/dots/underscores only"
+                 required/>
+        </div>
+        <small class="text-muted" style="font-size:0.75rem;">4–20 characters. Letters, numbers, dots, underscores only.</small>
+      </div>
+
+      <div class="mb-1">
+        <label class="form-label">Password *</label>
+        <div class="input-group">
+          <span class="input-group-text">🔒</span>
+          <input type="password" name="password" id="pwd" class="form-control"
+                 placeholder="Min 8 characters"
+                 oninput="checkStrength(this.value)"
+                 minlength="8" required/>
+          <button type="button" class="btn btn-outline-secondary btn-sm"
+                  style="border-radius:0 10px 10px 0; border-left:none;"
+                  onclick="togglePwd('pwd')">👁️</button>
+        </div>
+        <div class="strength-bar mt-1">
+          <div class="strength-fill" id="strength-fill" style="width:0%"></div>
+        </div>
+        <small id="strength-text" class="text-muted" style="font-size:0.75rem;"></small>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Confirm Password *</label>
+        <div class="input-group">
+          <span class="input-group-text">🔒</span>
+          <input type="password" name="confirm_password" id="cpwd"
+                 class="form-control" placeholder="Re-enter password"
+                 minlength="8" required/>
+          <button type="button" class="btn btn-outline-secondary btn-sm"
+                  style="border-radius:0 10px 10px 0; border-left:none;"
+                  onclick="togglePwd('cpwd')">👁️</button>
+        </div>
+        <small id="match-text" class="text-muted" style="font-size:0.75rem;"></small>
+      </div>
+
+      <button type="submit" class="btn-signup">
+        ✅ Create Doctor Account
+      </button>
+    </form>
+
+    <p class="text-center mt-3 mb-0 small text-muted">
+      Already have an account? <a href="/login" class="text-primary fw-bold">Login here</a>
+    </p>
+  </div>
+</div>
+
+<script>
+function togglePwd(id) {
+  const el = document.getElementById(id);
+  el.type = el.type === 'password' ? 'text' : 'password';
+}
+
+function checkStrength(val) {
+  const fill = document.getElementById('strength-fill');
+  const text = document.getElementById('strength-text');
+  let score  = 0;
+  if (val.length >= 8)                         score++;
+  if (/[A-Z]/.test(val))                       score++;
+  if (/[0-9]/.test(val))                       score++;
+  if (/[^A-Za-z0-9]/.test(val))               score++;
+
+  const levels = [
+    { w:'0%',   c:'',        t:'' },
+    { w:'25%',  c:'#dc3545', t:'Weak' },
+    { w:'50%',  c:'#fd7e14', t:'Fair' },
+    { w:'75%',  c:'#ffc107', t:'Good' },
+    { w:'100%', c:'#198754', t:'Strong ✅' },
+  ];
+  fill.style.width      = levels[score].w;
+  fill.style.background = levels[score].c;
+  text.textContent      = levels[score].t;
+  text.style.color      = levels[score].c;
+}
+
+function validateForm() {
+  const pwd  = document.getElementById('pwd').value;
+  const cpwd = document.getElementById('cpwd').value;
+  const mt   = document.getElementById('match-text');
+  if (pwd !== cpwd) {
+    mt.textContent  = '❌ Passwords do not match!';
+    mt.style.color  = '#dc3545';
+    return false;
+  }
+  mt.textContent = '✅ Passwords match!';
+  mt.style.color = '#198754';
+  return true;
+}
+
+document.getElementById('cpwd').addEventListener('input', function() {
+  const pwd  = document.getElementById('pwd').value;
+  const mt   = document.getElementById('match-text');
+  if (this.value === '') { mt.textContent = ''; return; }
+  if (this.value === pwd) {
+    mt.textContent = '✅ Passwords match!'; mt.style.color = '#198754';
+  } else {
+    mt.textContent = '❌ Does not match'; mt.style.color = '#dc3545';
+  }
+});
+</script>
+</body>
+</html>
