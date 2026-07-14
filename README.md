@@ -1,9 +1,14 @@
-**Navigate to the project directory**:
-cd Multiple-Ml-Prediction
+# Multiple ML Prediction App
 
-**Install the required dependencies**:
-pip install -r requirements.txt
+This is a Flask-based web application that provides multiple Machine Learning predictions. 
 
-**Run the Flask app**:
-python app.py
+## Project Structure
+* **app.py**: The main Flask application file.
+* **model/**: Contains the trained Machine Learning models and scalers.
+* **templates/**: Contains the HTML files for the user interface.
+* **static/**: Contains the images and CSS used in the web app.
 
+## How to Run the Project
+1. Clone this repository:
+   ```bash
+   git clone [https://github.com/chandrucoffl/Multiple-Ml-Prediction.git](https://github.com/chandrucoffl/Multiple-Ml-Prediction.git)
