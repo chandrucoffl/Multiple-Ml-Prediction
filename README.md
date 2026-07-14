@@ -12,12 +12,3 @@ This is a Flask-based web application that provides multiple Machine Learning pr
 1. Clone this repository:
    ```bash
    git clone [https://github.com/chandrucoffl/Multiple-Ml-Prediction.git](https://github.com/chandrucoffl/Multiple-Ml-Prediction.git)
-
-**Navigate to the project directory**:
-cd Multiple-Ml-Prediction
-
-**Install the required dependencies**:
-pip install -r requirements.txt
-
-**Run the Flask app**:
-python app.py
